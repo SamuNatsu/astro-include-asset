@@ -1,0 +1,49 @@
+{
+  "name": "astro-include-asset",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Include assets in Markdown/MDX",
+  "keywords": [
+    "astro",
+    "astro-integration",
+    "asset",
+    "markdown",
+    "mdx"
+  ],
+  "homepage": "https://github.com/SamuNatsu/astro-include-asset",
+  "bugs": "https://github.com/SamuNatsu/astro-include-asset/issues",
+  "license": "MIT",
+  "author": "SNRainiar <rainiar@foxmail.com>",
+  "repository": "github:SamuNatsu/astro-include-asset",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch"
+  },
+  "peerDependencies": {
+    "astro": "^6.0.0",
+    "remark-directive": "^4.0.0"
+  },
+  "dependencies": {
+    "flat-cache": "^6.1.22",
+    "mime": "^4.1.0",
+    "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^22.12.0",
+    "tsdown": "^0.21.7",
+    "typescript": "^5.0.0",
+    "vfile": "^6.0.3",
+    "vite": "^7.3.2"
+  }
+}
