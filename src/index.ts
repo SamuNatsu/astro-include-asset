@@ -34,7 +34,7 @@ export default function includeAsset({
   outDir = "_astro",
 }: Option = {}): AstroIntegration {
   return {
-    name: "copy-assets",
+    name: "astro-include-asset",
     hooks: {
       "astro:config:setup": ({
         config,
@@ -80,7 +80,7 @@ export default function includeAsset({
 // Vite plugin
 const viteAsset = (outDir: string) =>
   ({
-    name: "vite-copy-assets",
+    name: "astro-include-asset-vite",
     configureServer: (svr) => {
       svr.middlewares.use(async (req, res, next) => {
         if (req.url && req.url.startsWith(`/${outDir}/`)) {
