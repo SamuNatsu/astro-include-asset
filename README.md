@@ -2,7 +2,15 @@
 
 Include assets defined in Markdown/MDX files
 
+## Prerequisites
+
+### For unified processor
+
 Remark plugin `remark-directive` is needed for parsing the custom directives
+
+### For satteri processor
+
+Satteri feature `directive` should be enabled
 
 ## Usage
 
