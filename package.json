@@ -1,7 +1,7 @@
 {
   "name": "astro-include-asset",
   "type": "module",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Include assets in Markdown/MDX",
   "keywords": [
     "astro",
