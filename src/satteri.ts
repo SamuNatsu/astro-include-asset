@@ -1,6 +1,6 @@
 import type { AstroIntegrationLogger } from "astro";
+import type { SatteriResolvedOptions } from "@astrojs/markdown-satteri";
 import { FlatCache } from "flat-cache";
-import { defineMdastPlugin } from "satteri";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -14,7 +14,7 @@ export interface MdastOption {
 
 // --- Export satteri plugin ---
 export const mdastAsset = ({ cache, base, outDir, logger }: MdastOption) =>
-  defineMdastPlugin({
+  ({
     name: "astro-include-asset-mdast",
     leafDirective(node, ctx) {
       if (node.name !== "include-asset") return;
@@ -41,4 +41,4 @@ export const mdastAsset = ({ cache, base, outDir, logger }: MdastOption) =>
 
       ctx.setProperty(node, "children", []);
     },
-  });
+  }) as SatteriResolvedOptions["mdastPlugins"][number];

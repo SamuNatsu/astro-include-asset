@@ -37,7 +37,6 @@
     "@astrojs/markdown-satteri": "^0.3.2",
     "flat-cache": "^6.1.22",
     "mime": "^4.1.0",
-    "satteri": "^0.9.3",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {

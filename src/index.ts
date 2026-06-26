@@ -2,12 +2,12 @@ import type { AstroIntegration } from "astro";
 import { FlatCache } from "flat-cache";
 import { isSatteriProcessor } from "@astrojs/markdown-satteri";
 import { isUnifiedProcessor } from "@astrojs/markdown-remark";
+import { mdastAsset } from "./satteri";
 import { remarkAsset } from "./unified";
 import { viteAsset } from "./vite";
 import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
-import { mdastAsset } from "./satteri";
 
 // Types
 export interface Option {
@@ -52,9 +52,10 @@ export default function includeAsset({
             mdastAsset({ cache, base: config.base, outDir, logger }),
           );
         } else if (isUnifiedProcessor(processor)) {
-          processor.options.remarkPlugins.push(
-            remarkAsset({ cache, base: config.base, outDir, logger }),
-          );
+          processor.options.remarkPlugins.push([
+            remarkAsset,
+            { cache, base: config.base, outDir, logger },
+          ]);
         } else {
           throw Error(
             "only satteri and unified markdown processors are supported",
