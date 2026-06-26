@@ -1,14 +1,13 @@
-import type { AstroIntegration, AstroIntegrationLogger } from "astro";
-import type { Root } from "mdast";
-import type {} from "remark-directive";
-import type { VFile } from "vfile";
-import type { Plugin } from "vite";
+import type { AstroIntegration } from "astro";
 import { FlatCache } from "flat-cache";
-import { visit } from "unist-util-visit";
+import { isSatteriProcessor } from "@astrojs/markdown-satteri";
+import { isUnifiedProcessor } from "@astrojs/markdown-remark";
+import { remarkAsset } from "./unified";
+import { viteAsset } from "./vite";
 import fs from "node:fs";
-import mime from "mime";
 import path from "node:path";
 import url from "node:url";
+import { mdastAsset } from "./satteri";
 
 // Types
 export interface Option {
@@ -20,16 +19,10 @@ export interface Option {
   outDir?: string;
 }
 
-interface RemarkOption {
-  base: string;
-  outDir: string;
-  logger: AstroIntegrationLogger;
-}
-
 // Shared
 let cache: FlatCache;
 
-// Export integration
+// --- Export integration ---
 export default function includeAsset({
   outDir = "_astro",
 }: Option = {}): AstroIntegration {
@@ -45,21 +38,31 @@ export default function includeAsset({
       }) => {
         if (command !== "build" && command !== "dev") return;
 
-        // Cache control
+        // --- Cache control ---
         cache = new FlatCache({
           cacheDir: url.fileURLToPath(createCodegenDir()),
         });
         cache.load("cache1");
         if (command === "build") cache.clear();
 
-        // Inject plugins
+        // --- Inject plugins ---
+        const processor = config.markdown.processor;
+        if (isSatteriProcessor(processor)) {
+          processor.options.mdastPlugins.push(
+            mdastAsset({ cache, base: config.base, outDir, logger }),
+          );
+        } else if (isUnifiedProcessor(processor)) {
+          processor.options.remarkPlugins.push(
+            remarkAsset({ cache, base: config.base, outDir, logger }),
+          );
+        } else {
+          throw Error(
+            "only satteri and unified markdown processors are supported",
+          );
+        }
+
         updateConfig({
-          markdown: {
-            remarkPlugins: [
-              [remarkAsset, { base: config.base, outDir, logger }],
-            ],
-          },
-          vite: { plugins: [viteAsset(outDir)] },
+          vite: { plugins: [viteAsset(cache, outDir)] },
         });
       },
       "astro:build:done": async ({ dir }) => {
@@ -76,54 +79,3 @@ export default function includeAsset({
     },
   };
 }
-
-// Vite plugin
-const viteAsset = (outDir: string) =>
-  ({
-    name: "astro-include-asset-vite",
-    configureServer: (svr) => {
-      svr.middlewares.use(async (req, res, next) => {
-        if (req.url && req.url.startsWith(`/${outDir}/`)) {
-          const pth = cache.get<string>(req.url);
-
-          if (!pth || !fs.existsSync(pth)) {
-            return next();
-          }
-
-          res.setHeader(
-            "Content-Type",
-            mime.getType(pth) ?? "application/octet-stream",
-          );
-          fs.createReadStream(pth).pipe(res);
-          return;
-        }
-        next();
-      });
-    },
-  }) satisfies Plugin;
-
-// Remark plugin
-const remarkAsset =
-  ({ base, outDir, logger }: RemarkOption) =>
-  (tree: Root, vfile: VFile) => {
-    visit(tree, "leafDirective", (node) => {
-      if (node.name !== "include-asset") return;
-
-      if (node.children[0].type !== "text") {
-        throw Error("invalid asset directive");
-      }
-
-      const attr = node.attributes || (node.attributes = {});
-      if (!attr.id) {
-        throw Error("invalid asset directive");
-      }
-
-      const fromPath = path.resolve(vfile.history[0], node.children[0].value);
-      const toPath = path.join(base, outDir, attr.id);
-      cache.set(toPath, fromPath);
-      cache.save();
-      logger.info(`new asset: ${toPath} -> ${fromPath}`);
-
-      node.children = [];
-    });
-  };
